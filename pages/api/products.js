@@ -14,7 +14,7 @@ export default async function handler(req, res) {
 
   try {
     // Fetch products from Commerce7
-    const response = await fetch('https://api.commerce7.com/v1/product', {
+    const response = await fetch('https://api.commerce7.com/v1/product?limit=500', {
       method: 'GET',
       headers: {
         'Authorization': `Basic ${authToken}`,
