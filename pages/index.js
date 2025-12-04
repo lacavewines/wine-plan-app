@@ -16,42 +16,7 @@ export default function WinePlan() {
     const auth = localStorage.getItem('wineplan_auth');
     if (auth === 'authenticated') {
       setIsAuthenticated(true);
-      const loadProducts = async () => {
-  setLoading(true);
-  try {
-    const response = await fetch('/api/products');
-    const data = await response.json();
-    
-    if (data.products && data.products.length > 0) {
-      // Transform Commerce7 data to our format
-      const transformedProducts = data.products.slice(0, 20).map(product => {
-        const variant = product.variants?.[0];
-        const inventory = variant?.inventory?.[0];
-        const stock = inventory?.availableForSaleCount || 0;
-        
-        return {
-          producer: product.wine?.appellation || 'Unknown',
-          wine: product.title,
-          stock: stock,
-          burn: Math.floor(Math.random() * 20) + 5, // Mock burn rate for now
-          status: stock < 30 ? 'low' : stock < 100 ? 'medium' : 'good',
-          price: variant?.price ? (variant.price / 100).toFixed(0) : 0
-        };
-      });
-      
-      setProducts(transformedProducts);
-    }
-  } catch (error) {
-    console.error('Error loading products:', error);
-    // Fall back to demo data on error
-    setProducts([
-      { producer: 'Dosnon', wine: 'Blanc de Blancs Brut', stock: 23, burn: 8, status: 'low', price: 34 },
-      { producer: 'Château de Brézé', wine: 'Saumur Blanc', stock: 47, burn: 12, status: 'medium', price: 32 },
-      { producer: 'Domaine Huet', wine: 'Vouvray Sec', stock: 156, burn: 15, status: 'good', price: 37 }
-    ]);
-  }
-  setLoading(false);
-};
+      loadProducts();
     }
   }, []);
 
@@ -65,16 +30,50 @@ export default function WinePlan() {
     }
   };
 
-  const loadProducts = () => {
+  const loadProducts = async () => {
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const response = await fetch('/api/products');
+      const data = await response.json();
+      
+      console.log('API Response:', data);
+      
+      if (data.products && data.products.length > 0) {
+        // Transform Commerce7 data to our format
+        const transformedProducts = data.products.slice(0, 20).map(product => {
+          const variant = product.variants?.[0];
+          const inventory = variant?.inventory?.[0];
+          const stock = inventory?.availableForSaleCount || 0;
+          
+          return {
+            producer: product.wine?.appellation || product.collection || 'Unknown',
+            wine: product.title,
+            stock: stock,
+            burn: Math.floor(Math.random() * 20) + 5,
+            status: stock < 30 ? 'low' : stock < 100 ? 'medium' : 'good',
+            price: variant?.price ? Math.round(variant.price / 100) : 0
+          };
+        });
+        
+        console.log('Transformed products:', transformedProducts);
+        setProducts(transformedProducts);
+      } else {
+        console.log('No products found, using demo data');
+        setProducts([
+          { producer: 'Dosnon', wine: 'Blanc de Blancs Brut', stock: 23, burn: 8, status: 'low', price: 34 },
+          { producer: 'Château de Brézé', wine: 'Saumur Blanc', stock: 47, burn: 12, status: 'medium', price: 32 },
+          { producer: 'Domaine Huet', wine: 'Vouvray Sec', stock: 156, burn: 15, status: 'good', price: 37 }
+        ]);
+      }
+    } catch (error) {
+      console.error('Error loading products:', error);
       setProducts([
         { producer: 'Dosnon', wine: 'Blanc de Blancs Brut', stock: 23, burn: 8, status: 'low', price: 34 },
         { producer: 'Château de Brézé', wine: 'Saumur Blanc', stock: 47, burn: 12, status: 'medium', price: 32 },
         { producer: 'Domaine Huet', wine: 'Vouvray Sec', stock: 156, burn: 15, status: 'good', price: 37 }
       ]);
-      setLoading(false);
-    }, 1000);
+    }
+    setLoading(false);
   };
 
   if (!isAuthenticated) {
@@ -222,10 +221,10 @@ export default function WinePlan() {
           <h2 className="text-xl font-semibold mb-4">Total Inventory</h2>
           <div className="flex justify-between items-center mb-4">
             <div className="flex gap-6 text-sm text-gray-600">
-              <span><strong className="text-gray-900">2,847</strong> bottles</span>
-              <span><strong className="text-gray-900">42</strong> SKUs</span>
-              <span><strong className="text-gray-900">18</strong> producers</span>
-              <span><strong className="text-gray-900">$38,420</strong> COGS value</span>
+              <span><strong className="text-gray-900">{products.reduce((sum, p) => sum + p.stock, 0)}</strong> bottles</span>
+              <span><strong className="text-gray-900">{products.length}</strong> SKUs</span>
+              <span><strong className="text-gray-900">{new Set(products.map(p => p.producer)).size}</strong> producers</span>
+              <span><strong className="text-gray-900">${products.reduce((sum, p) => sum + (p.stock * p.price), 0).toLocaleString()}</strong> value</span>
             </div>
             <input type="text" placeholder="Search products..." className="px-4 py-2 border border-gray-300 rounded-lg w-64 focus:ring-2 focus:ring-purple-600" />
           </div>
@@ -264,5 +263,4 @@ export default function WinePlan() {
       </div>
     </div>
   );
-
 }
