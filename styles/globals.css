@@ -9,21 +9,3 @@ body {
 ```
 
 ---
-
-## **That's it! All 10 files.**
-
-**Next Steps:**
-1. Upload all these files to your `wine-plan-app` GitHub repository
-2. Make sure the folder structure looks like:
-```
-wine-plan-app/
-├── package.json
-├── next.config.js
-├── tailwind.config.js
-├── postcss.config.js
-├── .gitignore
-├── pages/
-│   ├── _app.js
-│   └── index.js
-└── styles/
-    └── globals.css
