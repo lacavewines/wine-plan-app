@@ -16,7 +16,42 @@ export default function WinePlan() {
     const auth = localStorage.getItem('wineplan_auth');
     if (auth === 'authenticated') {
       setIsAuthenticated(true);
-      loadProducts();
+      const loadProducts = async () => {
+  setLoading(true);
+  try {
+    const response = await fetch('/api/products');
+    const data = await response.json();
+    
+    if (data.products && data.products.length > 0) {
+      // Transform Commerce7 data to our format
+      const transformedProducts = data.products.slice(0, 20).map(product => {
+        const variant = product.variants?.[0];
+        const inventory = variant?.inventory?.[0];
+        const stock = inventory?.availableForSaleCount || 0;
+        
+        return {
+          producer: product.wine?.appellation || 'Unknown',
+          wine: product.title,
+          stock: stock,
+          burn: Math.floor(Math.random() * 20) + 5, // Mock burn rate for now
+          status: stock < 30 ? 'low' : stock < 100 ? 'medium' : 'good',
+          price: variant?.price ? (variant.price / 100).toFixed(0) : 0
+        };
+      });
+      
+      setProducts(transformedProducts);
+    }
+  } catch (error) {
+    console.error('Error loading products:', error);
+    // Fall back to demo data on error
+    setProducts([
+      { producer: 'Dosnon', wine: 'Blanc de Blancs Brut', stock: 23, burn: 8, status: 'low', price: 34 },
+      { producer: 'Château de Brézé', wine: 'Saumur Blanc', stock: 47, burn: 12, status: 'medium', price: 32 },
+      { producer: 'Domaine Huet', wine: 'Vouvray Sec', stock: 156, burn: 15, status: 'good', price: 37 }
+    ]);
+  }
+  setLoading(false);
+};
     }
   }, []);
 
@@ -229,4 +264,5 @@ export default function WinePlan() {
       </div>
     </div>
   );
+
 }
