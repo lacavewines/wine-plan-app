@@ -39,8 +39,13 @@ export default function WinePlan() {
       console.log('API Response:', data);
       
       if (data.products && data.products.length > 0) {
-        // Transform Commerce7 data to our format
-        const transformedProducts = data.products.slice(0, 20).map(product => {
+  // Filter out retired products and transform Commerce7 data
+  const transformedProducts = data.products
+    .filter(product => 
+      product.adminStatus !== 'Retired' && 
+      product.webStatus !== 'Retired'
+    )
+    .map(product => {
           const variant = product.variants?.[0];
           const inventory = variant?.inventory?.[0];
           const stock = inventory?.availableForSaleCount || 0;
@@ -264,3 +269,4 @@ export default function WinePlan() {
     </div>
   );
 }
+
