@@ -7,14 +7,12 @@ export default async function handler(req, res) {
 
   try {
     let allProducts = [];
-    let cursor = null;
-    let hasMore = true;
+    let page = 1;
+    let totalPages = 1;
 
-    // Fetch products in batches of 50
-    while (hasMore) {
-      const url = cursor 
-        ? `https://api.commerce7.com/v1/product?limit=50&cursor=${cursor}`
-        : 'https://api.commerce7.com/v1/product?limit=50';
+    // Fetch products using page-based pagination
+    while (page <= totalPages) {
+      const url = `https://api.commerce7.com/v1/product?limit=50&page=${page}`;
 
       const response = await fetch(url, {
         method: 'GET',
@@ -37,9 +35,14 @@ export default async function handler(req, res) {
         allProducts = allProducts.concat(data.products);
       }
 
-      // Check if there are more products
-      cursor = data.cursor;
-      hasMore = !!cursor;
+      // Calculate total pages from the 'total' count
+      if (page === 1 && data.total) {
+        totalPages = Math.ceil(data.total / 50);
+        console.log(`Total products: ${data.total}, Total pages: ${totalPages}`);
+      }
+
+      console.log(`Fetched page ${page} of ${totalPages}`);
+      page++;
     }
 
     console.log('Total products fetched:', allProducts.length);
