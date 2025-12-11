@@ -51,13 +51,14 @@ export default function WinePlan() {
           const stock = inventory?.availableForSaleCount || 0;
           
           return {
-            producer: product.wine?.appellation || product.collection || 'Unknown',
-            wine: product.title,
-            stock: stock,
-            burn: Math.floor(Math.random() * 20) + 5,
-            status: stock < 30 ? 'low' : stock < 100 ? 'medium' : 'good',
-            price: variant?.price ? Math.round(variant.price / 100) : 0
-          };
+  producer: product.wine?.appellation || product.collection || 'Unknown',
+  wine: product.title,
+  stock: stock,
+  burn: Math.floor(Math.random() * 20) + 5,
+  status: stock < 30 ? 'low' : stock < 100 ? 'medium' : 'good',
+  price: variant?.price ? Math.round(variant.price / 100) : 0,
+  cogs: variant?.costOfGood ? Math.round(variant.costOfGood / 100) : 0
+};
         });
         
         console.log('Transformed products:', transformedProducts);
@@ -226,11 +227,12 @@ export default function WinePlan() {
           <h2 className="text-xl font-semibold mb-4">Total Inventory</h2>
           <div className="flex justify-between items-center mb-4">
             <div className="flex gap-6 text-sm text-gray-600">
-              <span><strong className="text-gray-900">{products.reduce((sum, p) => sum + p.stock, 0)}</strong> bottles</span>
-              <span><strong className="text-gray-900">{products.length}</strong> SKUs</span>
-              <span><strong className="text-gray-900">{new Set(products.map(p => p.producer)).size}</strong> producers</span>
-              <span><strong className="text-gray-900">${products.reduce((sum, p) => sum + (p.stock * p.price), 0).toLocaleString()}</strong> value</span>
-            </div>
+  <span><strong className="text-gray-900">{products.reduce((sum, p) => sum + p.stock, 0)}</strong> bottles</span>
+  <span><strong className="text-gray-900">{products.length}</strong> SKUs</span>
+  <span><strong className="text-gray-900">{new Set(products.map(p => p.producer)).size}</strong> producers</span>
+  <span><strong className="text-gray-900">${products.reduce((sum, p) => sum + (p.stock * p.cogs), 0).toLocaleString()}</strong> COGS</span>
+  <span><strong className="text-gray-900">${products.reduce((sum, p) => sum + (p.stock * p.price), 0).toLocaleString()}</strong> Retail</span>
+</div>
             <input type="text" placeholder="Search products..." className="px-4 py-2 border border-gray-300 rounded-lg w-64 focus:ring-2 focus:ring-purple-600" />
           </div>
 
@@ -269,4 +271,5 @@ export default function WinePlan() {
     </div>
   );
 }
+
 
